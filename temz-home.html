@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temz - AI-Powered Minecraft Creator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0000;
+            --bg-secondary: #120000;
+            --bg-tertiary: #1a0000;
+            --accent-red: #ef4444;
+            --accent-red-bright: #f87171;
+            --accent-red-dark: #991b1b;
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f8fafc;
+            --text-secondary: rgba(248, 250, 252, 0.75);
+            --text-muted: rgba(248, 250, 252, 0.45);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(239, 68, 68, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            animation: ambientFloat 25s ease-in-out infinite;
+        }
+
+        @keyframes ambientFloat {
+            0%, 100% { opacity: 0.6; transform: translate(0, 0); }
+            50% { opacity: 0.9; transform: translate(20px, -20px); }
+        }
+
+        /* Header */
+        .header {
+            padding: 2rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-red-bright) 0%, var(--accent-red) 50%, var(--accent-red-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 4rem;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.25rem;
+            justify-content: center;
+            margin-bottom: 4rem;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            backdrop-filter: blur(12px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-red);
+        }
+
+        /* Projects Section */
+        .projects-section {
+            max-width: 1200px;
+            margin: 0 auto 4rem;
+            padding: 0 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .project-card {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-red);
+            box-shadow: 0 12px 40px rgba(239, 68, 68, 0.2);
+        }
+
+        .project-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-meta {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .new-project-card {
+            border: 2px dashed var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .new-project-card:hover {
+            border-color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        /* Features Section */
+        .features {
+            max-width: 1200px;
+            margin: 6rem auto;
+            padding: 0 4rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-red);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.9375rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: rgba(10, 0, 0, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.25s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-red);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .form-select option {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .option-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .option-card:hover {
+            border-color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .option-card.selected {
+            border-color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .option-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-desc {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 4rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--glass-border);
+            margin-top: 6rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header, .hero, .projects-section, .features {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .option-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">TEMZ</div>
+        <div class="nav-links">
+            <a class="nav-link" onclick="showAbout()">About</a>
+            <a class="nav-link" onclick="showDocs()">Docs</a>
+            <a class="nav-link" onclick="showSupport()">Support</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1 class="hero-title">Create Minecraft Content<br>with AI</h1>
+        <p class="hero-subtitle">Build custom addons, plugins, and datapacks for Minecraft using the power of AI. No coding experience required.</p>
+        <div class="cta-buttons">
+            <button class="btn btn-primary" onclick="openNewProjectModal()">🚀 Create New Project</button>
+            <button class="btn btn-secondary" onclick="showDocs()">📚 View Documentation</button>
+        </div>
+    </div>
+
+    <!-- Recent Projects -->
+    <div class="projects-section">
+        <div class="section-header">
+            <h2 class="section-title">Recent Projects</h2>
+            <button class="btn btn-secondary" onclick="clearProjects()" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Clear All</button>
+        </div>
+        <div class="projects-grid" id="projectsGrid">
+            <div class="project-card new-project-card" onclick="openNewProjectModal()">
+                <div class="project-icon">➕</div>
+                <div class="project-name">New Project</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+        <h2 class="section-title" style="text-align: center; margin-bottom: 3rem;">Why Choose Temz?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3 class="feature-title">AI-Powered</h3>
+                <p class="feature-desc">Use multiple free AI models to generate your Minecraft content. No API keys required for basic usage.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Lightning Fast</h3>
+                <p class="feature-desc">Generate custom items, entities, and blocks in seconds. No manual JSON editing required.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3 class="feature-title">Full Control</h3>
+                <p class="feature-desc">Edit generated code directly with our built-in code editor. Resize panels to fit your workflow.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3 class="feature-title">Export Ready</h3>
+                <p class="feature-desc">Download your projects as .mcpack, .mcaddon, or .zip files ready for Minecraft.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔄</div>
+                <h3 class="feature-title">Auto-Save</h3>
+                <p class="feature-desc">Never lose your work. Projects are automatically saved to your browser.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3 class="feature-title">Works Everywhere</h3>
+                <p class="feature-desc">Use Temz on any device with a web browser. No installation required.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Made with ❤️ for the Minecraft community</p>
+        <p style="margin-top: 0.5rem;">Temz is not affiliated with Mojang Studios or Microsoft</p>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Project</h2>
+                <p class="modal-subtitle">Configure your Minecraft project settings</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Project Name</label>
+                <input type="text" class="form-input" id="projectName" placeholder="My Awesome Addon" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Minecraft Edition</label>
+                <div class="option-grid">
+                    <div class="option-card" onclick="selectEdition('bedrock')">
+                        <div class="option-icon">🎮</div>
+                        <div class="option-title">Bedrock Edition</div>
+                        <div class="option-desc">Win10, Mobile, Console</div>
+                    </div>
+                    <div class="option-card" onclick="selectEdition('java')">
+                        <div class="option-icon">☕</div>
+                        <div class="option-title">Java Edition</div>
+                        <div class="option-desc">PC, Mac, Linux</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" id="versionGroup" style="display: none;">
+                <label class="form-label">Minecraft Version</label>
+                <select class="form-select" id="mcVersion">
+                    <option value="">Select version...</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="typeGroup" style="display: none;">
+                <label class="form-label">Project Type</label>
+                <div class="option-grid" id="typeOptions">
+                    <!-- Will be populated based on edition -->
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createProject()" id="createBtn" disabled>Create Project</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedEdition = null;
+        let selectedType = null;
+
+        const versions = {
+            bedrock: ['1.21', '1.20', '1.19', '1.18'],
+            java: ['1.21', '1.20.4', '1.19.4', '1.18.2']
+        };
+
+        const projectTypes = {
+            bedrock: [
+                { id: 'addon', icon: '📦', title: 'Addon', desc: 'Behavior + Resource Pack' },
+                { id: 'behavior', icon: '⚙️', title: 'Behavior Pack', desc: 'Game mechanics' },
+                { id: 'resource', icon: '🎨', title: 'Resource Pack', desc: 'Textures & models' }
+            ],
+            java: [
+                { id: 'datapack', icon: '📊', title: 'Data Pack', desc: 'Functions & loot tables' },
+                { id: 'plugin', icon: '🔌', title: 'Plugin', desc: 'Spigot/Paper plugin' },
+                { id: 'mod', icon: '⚡', title: 'Mod', desc: 'Forge/Fabric mod' }
+            ]
+        };
+
+        function openNewProjectModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+            resetModal();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function resetModal() {
+            document.getElementById('projectName').value = '';
+            selectedEdition = null;
+            selectedType = null;
+            document.querySelectorAll('.option-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById('versionGroup').style.display = 'none';
+            document.getElementById('typeGroup').style.display = 'none';
+            document.getElementById('createBtn').disabled = true;
+        }
+
+        function selectEdition(edition) {
+            selectedEdition = edition;
+            
+            // Update UI
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            // Show version selector
+            const versionSelect = document.getElementById('mcVersion');
+            versionSelect.innerHTML = '<option value="">Select version...</option>';
+            versions[edition].forEach(v => {
+                versionSelect.innerHTML += `<option value="${v}">${v}</option>`;
+            });
+            document.getElementById('versionGroup').style.display = 'block';
+            
+            // Show type selector
+            const typeOptions = document.getElementById('typeOptions');
+            typeOptions.innerHTML = '';
+            projectTypes[edition].forEach(type => {
+                typeOptions.innerHTML += `
+                    <div class="option-card" onclick="selectType('${type.id}')">
+                        <div class="option-icon">${type.icon}</div>
+                        <div class="option-title">${type.title}</div>
+                        <div class="option-desc">${type.desc}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('typeGroup').style.display = 'block';
+            
+            selectedType = null;
+            checkFormComplete();
+        }
+
+        function selectType(type) {
+            selectedType = type;
+            
+            // Update UI
+            const typeCards = document.getElementById('typeOptions').querySelectorAll('.option-card');
+            typeCards.forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            checkFormComplete();
+        }
+
+        function checkFormComplete() {
+            const name = document.getElementById('projectName').value.trim();
+            const version = document.getElementById('mcVersion').value;
+            const createBtn = document.getElementById('createBtn');
+            
+            if (name && selectedEdition && version && selectedType) {
+                createBtn.disabled = false;
+            } else {
+                createBtn.disabled = true;
+            }
+        }
+
+        document.getElementById('projectName').addEventListener('input', checkFormComplete);
+        document.getElementById('mcVersion').addEventListener('change', checkFormComplete);
+
+        function createProject() {
+            const projectName = document.getElementById('projectName').value.trim();
+            const version = document.getElementById('mcVersion').value;
+            
+            const project = {
+                name: projectName,
+                edition: selectedEdition,
+                version: version,
+                type: selectedType,
+                created: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            let projects = JSON.parse(localStorage.getItem('temz_projects') || '[]');
+            projects.unshift(project);
+            localStorage.setItem('temz_projects', JSON.stringify(projects));
+            
+            // Navigate to builder
+            localStorage.setItem('temz_current_project', JSON.stringify(project));
+            window.location.href = 'builder-horizontal.html';
+        }
+
+        function loadRecentProjects() {
+            const projects = JSON.parse(localStorage.getItem('temz_projects') || '[]');
+            const grid = document.getElementById('projectsGrid');
+            
+            // Keep the new project card
+            const newProjectCard = grid.querySelector('.new-project-card');
+            grid.innerHTML = '';
+            grid.appendChild(newProjectCard);
+            
+            projects.slice(0, 5).forEach(project => {
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.onclick = () => openProject(project);
+                
+                const icon = project.edition === 'bedrock' ? '🎮' : '☕';
+                const typeEmoji = projectTypes[project.edition].find(t => t.id === project.type)?.icon || '📦';
+                
+                card.innerHTML = `
+                    <div class="project-icon">${icon} ${typeEmoji}</div>
+                    <div class="project-name">${project.name}</div>
+                    <div class="project-meta">
+                        <span>${project.edition === 'bedrock' ? 'Bedrock' : 'Java'} ${project.version}</span>
+                        <span>${new Date(project.created).toLocaleDateString()}</span>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function openProject(project) {
+            localStorage.setItem('temz_current_project', JSON.stringify(project));
+            window.location.href = 'builder-horizontal.html';
+        }
+
+        function clearProjects() {
+            if (confirm('Are you sure you want to clear all recent projects? This will not delete saved project files.')) {
+                localStorage.removeItem('temz_projects');
+                loadRecentProjects();
+            }
+        }
+
+        function showAbout() {
+            alert('Temz - AI-Powered Minecraft Creator\n\nVersion 1.0.0\n\nCreate custom Minecraft content using AI assistance. Perfect for beginners and experienced creators alike!');
+        }
+
+        function showDocs() {
+            alert('📚 Documentation\n\nDocumentation is coming soon! For now:\n\n1. Create a new project\n2. Describe what you want to the AI\n3. Edit the generated code\n4. Export and use in Minecraft\n\nCheck back soon for detailed guides!');
+        }
+
+        function showSupport() {
+            alert('💬 Support\n\nNeed help? Here are some resources:\n\n• GitHub Issues (coming soon)\n• Discord Community (coming soon)\n• Email: support@temz.ai\n\nFor AI setup instructions, check the documentation!');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modalOverlay') {
+                closeModal();
+            }
+        });
+
+        // Load recent projects on page load
+        window.addEventListener('load', loadRecentProjects);
+    </script>
+</body>
+</html>
