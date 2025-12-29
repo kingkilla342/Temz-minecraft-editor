@@ -5,60 +5,24 @@ export default async function handler(req, res) {
     
     if (req.method === 'OPTIONS') return res.status(200).end();
     
-    const { message, model } = req.body;
+    const { message } = req.body;
     
     try {
-        let aiResponse = '';
-
-        // GPT-3.5 Turbo or GPT-4
-        if (model === 'gpt35' || model === 'gpt4') {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`,
+            {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.OPENAI_KEY}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: model === 'gpt35' ? 'gpt-3.5-turbo' : 'gpt-4',
-                    messages: [
-                        { role: 'system', content: 'You are a Minecraft plugin developer assistant.' },
-                        { role: 'user', content: message }
-                    ],
-                    max_tokens: 1500
+                    contents: [{ parts: [{ text: message }] }]
                 })
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'OpenAI API error');
             }
-            
-            const data = await response.json();
-            aiResponse = data.choices[0].message.content;
-        }
-
-        // Gemini
-        else if (model === 'gemini') {
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: message }] }]
-                    })
-                }
-            );
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'Gemini API error');
-            }
-            
-            const data = await response.json();
-            aiResponse = data.candidates[0].content.parts[0].text;
-        }
-
+        );
+        
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        
+        const aiResponse = data.candidates[0].content.parts[0].text;
         res.status(200).json({ response: aiResponse });
     } catch (error) {
         res.status(500).json({ error: error.message });
