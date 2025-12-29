@@ -847,6 +847,10 @@
                     body: JSON.stringify({ message: msg, model: model })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.error) throw new Error(data.error);
@@ -862,11 +866,11 @@
                 container.scrollTop = container.scrollHeight;
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Full error:', error);
                 container.innerHTML += `
                     <div class="message ai">
                         <div class="avatar">🤖</div>
-                        <div class="msg-content"><strong>Error:</strong> ${error.message}<br><br>Make sure API is configured.</div>
+                        <div class="msg-content"><strong>Error:</strong> ${error.message}</div>
                     </div>
                 `;
                 container.scrollTop = container.scrollHeight;
