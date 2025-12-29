@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temz Builder - AI Minecraft Creator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0000;
+            --bg-secondary: #120000;
+            --bg-tertiary: #1a0000;
+            --accent-red: #ef4444;
+            --accent-red-bright: #f87171;
+            --accent-red-dark: #991b1b;
+            --glass-bg: rgba(255, 255, 255, 0.02);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f8fafc;
+            --text-secondary: rgba(248, 250, 252, 0.75);
+            --text-muted: rgba(248, 250, 252, 0.45);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(239, 68, 68, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(239, 68, 68, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            animation: ambientFloat 25s ease-in-out infinite;
+        }
+
+        @keyframes ambientFloat {
+            0%, 100% { opacity: 0.6; transform: translate(0, 0) scale(1); }
+            50% { opacity: 0.9; transform: translate(15px, -15px) scale(1.05); }
+        }
+
+        /* Header */
+        .header {
+            height: 64px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo-small {
+            font-size: 1.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-red-bright) 0%, var(--accent-red) 50%, var(--accent-red-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .btn-header {
+            padding: 0.625rem 1.25rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-header:hover {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: var(--accent-red);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-dark) 100%);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Main Layout - Horizontal Resizable Panels */
+        .builder-container {
+            display: flex;
+            height: calc(100vh - 64px);
+            position: relative;
+        }
+
+        /* Panel Styling */
+        .panel {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(16px) saturate(150%);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .panel-left {
+            width: 280px;
+            min-width: 200px;
+            max-width: 500px;
+            border-right: 1px solid var(--glass-border);
+        }
+
+        .panel-center {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .panel-right {
+            width: 420px;
+            min-width: 300px;
+            max-width: 600px;
+            border-left: 1px solid var(--glass-border);
+        }
+
+        .panel-header {
+            padding: 1rem 1.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--glass-border);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Resizer Handles */
+        .resizer {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            cursor: col-resize;
+            background: transparent;
+            z-index: 10;
+            transition: all 0.2s ease;
+        }
+
+        .resizer:hover {
+            background: var(--accent-red);
+            opacity: 0.5;
+        }
+
+        .resizer.active {
+            background: var(--accent-red);
+            opacity: 0.8;
+        }
+
+        .resizer-left {
+            right: -3px;
+        }
+
+        .resizer-right {
+            left: -3px;
+        }
+
+        /* File Manager */
+        .file-tree {
+            padding: 0.5rem 0;
+        }
+
+        .file-item, .folder-item {
+            padding: 0.75rem 1.75rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 400;
+            border-left: 2px solid transparent;
+        }
+
+        .file-item:hover, .folder-item:hover {
+            background: rgba(239, 68, 68, 0.06);
+            color: var(--text-primary);
+            border-left-color: var(--accent-red);
+        }
+
+        .file-item.active {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--text-primary);
+            border-left-color: var(--accent-red);
+            font-weight: 500;
+        }
+
+        .folder-item {
+            font-weight: 500;
+        }
+
+        .folder-item.open {
+            color: var(--accent-red-bright);
+        }
+
+        .folder-children {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-left: 2rem;
+        }
+
+        .folder-children.expanded {
+            max-height: 1000px;
+        }
+
+        .icon {
+            font-size: 1.125rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* Code Editor */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+
+        .editor-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+        }
+
+        .editor-tabs::-webkit-scrollbar {
+            height: 0;
+        }
+
+        .editor-tab {
+            padding: 0.875rem 1.5rem;
+            cursor: pointer;
+            border-right: 1px solid transparent;
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            position: relative;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .editor-tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-red);
+            transform: scaleX(0);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .editor-tab:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+        }
+
+        .editor-tab.active {
+            background: rgba(239, 68, 68, 0.08);
+            color: var(--text-primary);
+        }
+
+        .editor-tab.active::after {
+            transform: scaleX(1);
+        }
+
+        /* Custom Code Editor */
+        #code-editor {
+            flex: 1;
+            width: 100%;
+            background: #1e1e1e;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-wrapper {
+            height: 100%;
+            display: flex;
+            position: relative;
+        }
+
+        .line-numbers {
+            background: #1e1e1e;
+            color: #858585;
+            padding: 1rem 0.5rem;
+            text-align: right;
+            user-select: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            border-right: 1px solid #2d2d2d;
+            min-width: 50px;
+        }
+
+        .code-content {
+            flex: 1;
+            overflow: auto;
+        }
+
+        #code-textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            outline: none;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: none;
+            tab-size: 2;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: auto;
+        }
+
+        /* Syntax Highlighting */
+        .syntax-highlighted {
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre;
+            overflow-wrap: normal;
+            overflow-x: auto;
+            color: #d4d4d4;
+        }
+
+        .syntax-string { color: #ce9178; }
+        .syntax-number { color: #b5cea8; }
+        .syntax-boolean { color: #569cd6; }
+        .syntax-null { color: #569cd6; }
+        .syntax-key { color: #9cdcfe; }
+        .syntax-punctuation { color: #d4d4d4; }
+
+        #monaco-editor {
+            flex: 1;
+            width: 100%;
+            display: none;
+        }
+
+        .save-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            padding: 0.5rem 1.25rem;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--accent-red);
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(-8px) scale(0.95);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            pointer-events: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .btn-save {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-dark) 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            font-family: 'Inter', sans-serif;
+            opacity: 0;
+            transform: translateY(8px) scale(0.9);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-save.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Chat Panel */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .model-selector {
+            padding: 1.25rem 1.75rem;
+            background: rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .model-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .model-select:hover {
+            border-color: var(--accent-red);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .model-select:focus {
+            outline: none;
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .model-select option {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 0.5rem;
+        }
+
+        .artifact-viewer {
+            margin: 1.25rem 1.75rem;
+            padding: 1.25rem;
+            background: rgba(239, 68, 68, 0.04);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .artifact-viewer.show {
+            max-height: 250px;
+        }
+
+        .artifact-header {
+            font-size: 0.75rem;
+            color: var(--accent-red);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .artifact-files {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            animation: slideInMessage 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        }
+
+        .message.user .message-avatar {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .message-content {
+            flex: 1;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            font-size: 0.9375rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            transition: all 0.25s ease;
+        }
+
+        .message-content:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .message.ai .message-content {
+            background: rgba(239, 68, 68, 0.06);
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        .message.ai .message-content:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .chat-input-container {
+            padding: 1.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 0.875rem;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.875rem 1.25rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-family: 'Inter', sans-serif;
+            resize: none;
+            max-height: 140px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1.6;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-red);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-send {
+            padding: 0.875rem 1.75rem;
+            background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-dark) 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+        }
+
+        .btn-send:active {
+            transform: translateY(0);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(239, 68, 68, 0.25);
+            border-radius: 5px;
+            transition: background 0.2s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        /* Loading indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 1rem;
+        }
+
+        .typing-dot {
+            width: 9px;
+            height: 9px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .panel-left {
+                width: 240px;
+                min-width: 180px;
+            }
+
+            .panel-right {
+                width: 360px;
+                min-width: 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .builder-container {
+                flex-direction: column;
+            }
+
+            .panel-left, .panel-right, .panel-center {
+                width: 100% !important;
+                max-width: none !important;
+                min-width: 0 !important;
+                border: none;
+                border-bottom: 1px solid var(--glass-border);
+            }
+
+            .resizer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo-small" onclick="confirmExit()" style="cursor: pointer;">TEMZ</div>
+        <div class="header-actions">
+            <button class="btn-header" onclick="saveProject()">💾 Save Project</button>
+            <button class="btn-header" onclick="exportProject()">📦 Export</button>
+            <button class="btn-header btn-primary" onclick="downloadAll()">⬇️ Download</button>
+            <button class="btn-header" onclick="confirmExit()">🚪 Exit</button>
+        </div>
+    </div>
+
+    <!-- Main Builder - Horizontal Resizable Panels -->
+    <div class="builder-container">
+        
+        <!-- AI Chat Panel (Left) -->
+        <div class="panel panel-left" id="leftPanel">
+            <div class="panel-header">
+                <span>🤖 AI Assistant</span>
+            </div>
+            <div class="panel-content">
+                <div class="chat-container">
+                    <div class="model-selector">
+                        <select class="model-select" id="modelSelect">
+                            <optgroup label="Free Models">
+                                <option value="gpt-3.5">GPT-3.5 Turbo (Free)</option>
+                                <option value="claude-haiku">Claude Haiku (Free)</option>
+                                <option value="gemini-pro">Gemini Pro (Free)</option>
+                            </optgroup>
+                            <optgroup label="Premium Models">
+                                <option value="gpt-4">GPT-4 (Premium)</option>
+                                <option value="claude-opus">Claude Opus (Premium)</option>
+                                <option value="gemini-ultra">Gemini Ultra (Premium)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="artifact-viewer" id="artifactViewer">
+                        <div class="artifact-header">🔧 Currently Working On</div>
+                        <div class="artifact-files" id="artifactFiles">
+                            No active operations
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message ai">
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                Hello! I'm your AI assistant for Minecraft addon creation. I can help you build custom items, entities, blocks, and more. Just describe what you want to create!
+                                <br><br>
+                                <strong>Try these commands:</strong>
+                                <br>• "Create a diamond sword with fire aspect"
+                                <br>• "Make a custom zombie that drops emeralds"
+                                <br>• "Add a glowing redstone block"
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <textarea 
+                                class="chat-input" 
+                                id="chatInput" 
+                                placeholder="Describe what you want to create..."
+                                rows="1"
+                                onkeypress="handleKeyPress(event)"
+                                oninput="autoResize(this)"
+                            ></textarea>
+                            <button class="btn-send" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="resizer resizer-left" id="leftResizer"></div>
+        </div>
+
+        <!-- File Manager Panel (Center) -->
+        <div class="panel panel-center" id="centerPanel">
+            <div class="panel-header">
+                <span>📁 File Explorer</span>
+            </div>
+            <div class="panel-content">
+                <div class="file-tree" id="fileTree"></div>
+            </div>
+        </div>
+
+        <!-- Code Editor Panel (Right) -->
+        <div class="panel panel-right" id="rightPanel">
+            <div class="panel-header">
+                <span>💻 Code Editor</span>
+            </div>
+            <div class="panel-content">
+                <div class="editor-container">
+                    <div class="editor-tabs" id="editorTabs">
+                        <div class="editor-tab active" data-file="manifest.json">manifest.json</div>
+                    </div>
+                    <div class="save-indicator" id="saveIndicator">✓ Saved</div>
+                    <div id="code-editor">
+                        <div class="editor-wrapper">
+                            <div class="line-numbers" id="lineNumbers">1</div>
+                            <div class="code-content">
+                                <textarea id="code-textarea" spellcheck="false"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="monaco-editor"></div>
+                    <button class="btn-save" id="saveBtn" onclick="saveFile()">💾 Save Changes</button>
+                </div>
+            </div>
+            <div class="resizer resizer-right" id="rightResizer"></div>
+        </div>
+
+    </div>
+
+    <script>
+        let editor;
+        let currentFile = 'manifest.json';
+        let fileContents = {};
+        let hasUnsavedChanges = false;
+
+        // Custom Code Editor
+        const codeTextarea = document.getElementById('code-textarea');
+        const lineNumbers = document.getElementById('lineNumbers');
+
+        // Update line numbers
+        function updateLineNumbers() {
+            const lines = codeTextarea.value.split('\n').length;
+            let lineNumbersText = '';
+            for (let i = 1; i <= lines; i++) {
+                lineNumbersText += i + '\n';
+            }
+            lineNumbers.textContent = lineNumbersText;
+        }
+
+        // Handle input changes
+        codeTextarea.addEventListener('input', () => {
+            updateLineNumbers();
+            hasUnsavedChanges = true;
+            document.getElementById('saveBtn').classList.add('show');
+        });
+
+        // Handle scroll sync
+        codeTextarea.addEventListener('scroll', () => {
+            lineNumbers.scrollTop = codeTextarea.scrollTop;
+        });
+
+        // Tab key support
+        codeTextarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = codeTextarea.selectionStart;
+                const end = codeTextarea.selectionEnd;
+                const value = codeTextarea.value;
+                
+                codeTextarea.value = value.substring(0, start) + '  ' + value.substring(end);
+                codeTextarea.selectionStart = codeTextarea.selectionEnd = start + 2;
+                
+                updateLineNumbers();
+                hasUnsavedChanges = true;
+                document.getElementById('saveBtn').classList.add('show');
+            }
+        });
+
+        // Initialize editor
+        function initEditor(content) {
+            codeTextarea.value = content;
+            updateLineNumbers();
+        }
+
+        // Get editor value
+        function getEditorValue() {
+            return codeTextarea.value;
+        }
+
+        // Set editor value
+        function setEditorValue(content) {
+            codeTextarea.value = content;
+            updateLineNumbers();
+        }
+
+        // File structure
+        const fileStructure = {
+            'manifest.json': {
+                type: 'file',
+                content: `{
+  "format_version": 2,
+  "header": {
+    "name": "My Addon Pack",
+    "description": "Created with Temz AI",
+    "uuid": "${generateUUID()}",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 20, 0]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "${generateUUID()}",
+      "version": [1, 0, 0]
+    }
+  ]
+}`,
+                language: 'json'
+            },
+            'items': {
+                type: 'folder',
+                children: {
+                    'custom_sword.json': {
+                        type: 'file',
+                        content: '// Custom sword item configuration',
+                        language: 'json'
+                    }
+                }
+            },
+            'entities': {
+                type: 'folder',
+                children: {}
+            },
+            'blocks': {
+                type: 'folder',
+                children: {}
+            }
+        };
+
+        // Initialize editor with default file
+        initEditor(fileStructure['manifest.json'].content);
+        fileContents[currentFile] = fileStructure['manifest.json'].content;
+
+        // Panel resizing
+        let isResizing = false;
+        let currentResizer = null;
+
+        const leftPanel = document.getElementById('leftPanel');
+        const rightPanel = document.getElementById('rightPanel');
+        const leftResizer = document.getElementById('leftResizer');
+        const rightResizer = document.getElementById('rightResizer');
+
+        // Left panel resizing
+        leftResizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            currentResizer = 'left';
+            leftResizer.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        // Right panel resizing
+        rightResizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            currentResizer = 'right';
+            rightResizer.classList.add('active');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+
+            if (currentResizer === 'left') {
+                const newWidth = e.clientX;
+                if (newWidth >= 200 && newWidth <= 500) {
+                    leftPanel.style.width = newWidth + 'px';
+                }
+            } else if (currentResizer === 'right') {
+                const newWidth = window.innerWidth - e.clientX;
+                if (newWidth >= 300 && newWidth <= 600) {
+                    rightPanel.style.width = newWidth + 'px';
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                currentResizer = null;
+                leftResizer.classList.remove('active');
+                rightResizer.classList.remove('active');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // Render file tree
+        function renderFileTree() {
+            const tree = document.getElementById('fileTree');
+            tree.innerHTML = '';
+            
+            function renderItem(name, item, path = '') {
+                const fullPath = path ? `${path}/${name}` : name;
+                
+                if (item.type === 'folder') {
+                    const folder = document.createElement('div');
+                    folder.className = 'folder-item';
+                    folder.innerHTML = `<span class="icon">📁</span>${name}`;
+                    folder.onclick = (e) => {
+                        e.stopPropagation();
+                        toggleFolder(folder);
+                    };
+                    tree.appendChild(folder);
+                    
+                    const children = document.createElement('div');
+                    children.className = 'folder-children';
+                    
+                    for (let childName in item.children) {
+                        const childDiv = document.createElement('div');
+                        const child = item.children[childName];
+                        
+                        if (child.type === 'file') {
+                            childDiv.className = 'file-item';
+                            childDiv.innerHTML = `<span class="icon">📄</span>${childName}`;
+                            childDiv.onclick = (e) => {
+                                e.stopPropagation();
+                                openFile(fullPath + '/' + childName);
+                            };
+                        }
+                        
+                        children.appendChild(childDiv);
+                    }
+                    
+                    tree.appendChild(children);
+                } else {
+                    const file = document.createElement('div');
+                    file.className = 'file-item';
+                    if (fullPath === currentFile) file.classList.add('active');
+                    file.innerHTML = `<span class="icon">📄</span>${name}`;
+                    file.onclick = () => openFile(fullPath);
+                    tree.appendChild(file);
+                }
+            }
+            
+            for (let name in fileStructure) {
+                renderItem(name, fileStructure[name]);
+            }
+        }
+
+        function toggleFolder(folderElement) {
+            const children = folderElement.nextElementSibling;
+            if (children && children.classList.contains('folder-children')) {
+                children.classList.toggle('expanded');
+                folderElement.classList.toggle('open');
+            }
+        }
+
+        function openFile(filePath) {
+            if (currentFile) {
+                fileContents[currentFile] = getEditorValue();
+            }
+            
+            currentFile = filePath;
+            
+            const parts = filePath.split('/');
+            let item = fileStructure;
+            
+            for (let part of parts) {
+                if (item[part]) {
+                    item = item[part];
+                } else if (item.children && item.children[part]) {
+                    item = item.children[part];
+                }
+            }
+            
+            if (item.type === 'file') {
+                const content = fileContents[filePath] || item.content;
+                setEditorValue(content);
+                hasUnsavedChanges = false;
+                document.getElementById('saveBtn').classList.remove('show');
+                
+                document.querySelectorAll('.file-item').forEach(f => f.classList.remove('active'));
+                renderFileTree();
+            }
+        }
+
+        function saveFile() {
+            if (currentFile) {
+                fileContents[currentFile] = getEditorValue();
+                hasUnsavedChanges = false;
+                
+                const saveBtn = document.getElementById('saveBtn');
+                const indicator = document.getElementById('saveIndicator');
+                
+                saveBtn.classList.remove('show');
+                indicator.classList.add('show');
+                
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2500);
+            }
+        }
+
+        // Chat functionality
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 140) + 'px';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            input.style.height = 'auto';
+            
+            const artifactViewer = document.getElementById('artifactViewer');
+            const artifactFiles = document.getElementById('artifactFiles');
+            artifactViewer.classList.add('show');
+            artifactFiles.innerHTML = '📝 Reading: manifest.json<br>🔍 Analyzing request...';
+            
+            addTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                
+                artifactFiles.innerHTML = '✅ Created: items/fire_sword.json<br>✏️ Modified: manifest.json';
+                
+                const model = document.getElementById('modelSelect').value;
+                const response = generateAIResponse(message, model);
+                addMessage(response, 'ai');
+                
+                setTimeout(() => {
+                    artifactViewer.classList.remove('show');
+                }, 3500);
+            }, 2000);
+        }
+
+        function generateAIResponse(message, model) {
+            const lowerMsg = message.toLowerCase();
+            
+            if (lowerMsg.includes('sword') || lowerMsg.includes('weapon')) {
+                return `Perfect! I'll create a custom fire sword for you using ${model}.
+
+I've generated:
+✅ <strong>items/fire_sword.json</strong> - Custom sword with fire aspect enchantment
+✅ <strong>Updated manifest.json</strong> with the new item reference
+
+The sword deals additional fire damage and has custom attributes. Check the file explorer to view and edit the generated files!`;
+            } else if (lowerMsg.includes('mob') || lowerMsg.includes('entity')) {
+                return `Great idea! I can create a custom mob using ${model}.
+
+To make this perfect, I need a few details:
+• What appearance should the mob have?
+• What items should it drop when defeated?
+• Should it be hostile, passive, or neutral?
+
+Provide these details and I'll generate the complete entity configuration!`;
+            } else {
+                return `I'm ready to help using ${model}! 
+
+To create something specific, try commands like:
+• "Create a diamond pickaxe with efficiency V"
+• "Make a glowing emerald block"
+• "Add a speed potion effect item"
+
+What would you like to build?`;
+            }
+        }
+
+        function addMessage(content, type) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatar = type === 'ai' ? '🤖' : '👤';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">${content}</div>
+            `;
+            
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const messages = document.getElementById('chatMessages');
+            const indicator = document.createElement('div');
+            indicator.className = 'message ai typing-indicator-msg';
+            indicator.id = 'typingIndicator';
+            indicator.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            messages.appendChild(indicator);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function exportProject() {
+            alert('📦 Export feature coming soon!\n\nThis will package your addon into a .mcpack or .zip file ready for Minecraft.');
+        }
+
+        function downloadAll() {
+            alert('⬇️ Download feature coming soon!\n\nThis will download all your project files as a compressed archive.');
+        }
+
+        function saveProject() {
+            // Save all file contents
+            if (currentFile) {
+                fileContents[currentFile] = getEditorValue();
+            }
+
+            // Store in localStorage
+            const projectData = {
+                files: fileContents,
+                fileStructure: fileStructure,
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem('temz_project', JSON.stringify(projectData));
+
+            // Show feedback
+            const indicator = document.getElementById('saveIndicator');
+            indicator.textContent = '✓ Project Saved!';
+            indicator.classList.add('show');
+
+            setTimeout(() => {
+                indicator.classList.remove('show');
+                indicator.textContent = '✓ Saved';
+            }, 2500);
+        }
+
+        function confirmExit() {
+            if (hasUnsavedChanges) {
+                if (confirm('You have unsaved changes. Would you like to save before exiting?')) {
+                    saveProject();
+                    setTimeout(() => {
+                        window.location.href = 'temz-home.html';
+                    }, 500);
+                } else if (confirm('Are you sure you want to exit without saving?')) {
+                    window.location.href = 'temz-home.html';
+                }
+            } else {
+                if (confirm('Exit to home page?')) {
+                    window.location.href = 'temz-home.html';
+                }
+            }
+        }
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Initialize
+        renderFileTree();
+
+        // Load saved project if exists
+        window.addEventListener('load', () => {
+            const savedProject = localStorage.getItem('temz_project');
+            if (savedProject) {
+                try {
+                    const projectData = JSON.parse(savedProject);
+                    if (projectData.files) {
+                        fileContents = projectData.files;
+                    }
+                } catch (e) {
+                    console.error('Error loading saved project:', e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
