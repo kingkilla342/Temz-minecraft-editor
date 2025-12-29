@@ -739,13 +739,7 @@
                     </div>
                 </div>
                 <select class="setting-select" id="aiModel">
-                    <optgroup label="Free Models">
-                        <option value="gpt35">GPT-3.5 Turbo</option>
-                        <option value="gemini">Gemini Pro</option>
-                    </optgroup>
-                    <optgroup label="Premium">
-                        <option value="gpt4">GPT-4</option>
-                    </optgroup>
+                    <option value="gemini">Gemini Pro</option>
                 </select>
             </div>
         </div>
@@ -838,13 +832,11 @@
             document.getElementById('msgCount').textContent = messages;
             container.scrollTop = container.scrollHeight;
 
-            const model = document.getElementById('aiModel').value;
-
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: msg, model: model })
+                    body: JSON.stringify({ message: msg })
                 });
                 
                 if (!response.ok) {
